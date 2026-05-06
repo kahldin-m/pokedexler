@@ -6,15 +6,81 @@ package main
 // by removing any spaces, including newlines, and returns a slice of the resulting substrings
 
 import (
+	"bufio"
+	"fmt"
+	"os"
 	"strings"
 )
 
-func cleanInput(text string) []string {
-	result := []string{}
-	words := strings.Fields(text)
-	for _, w := range words {
-		lowered := strings.ToLower(w)
-		result = append(result, lowered)
+func startRepl(cfg *config) {
+	// Set up the input scanner
+	scanner := bufio.NewScanner(os.Stdin)
+	// Create Pokedex REP(Loop)
+	for {
+		fmt.Print("Pokedex > ")
+		scanner.Scan()
+		// If user presses enter with nothing:
+		input := cleanInput(scanner.Text())
+		if len(input) == 0 {
+			continue
+		}
+		
+		proper := input[0]
+		command, ok := getCommands()[proper]
+		if ok {
+			err := command.callback(cfg)
+			if err != nil {
+				fmt.Println(err)
+			}
+			continue
+		} else {
+			fmt.Println("Command was invalid")
+			continue
+		}
 	}
-	return result
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+}
+
+func cleanInput(text string) []string {
+	output := strings.ToLower(text)
+	words := strings.Fields(output)
+	return words
+}
+
+type cliCommand struct {
+	name        string
+	description string
+	callback    func(*config) error
+}
+
+func getCommands() map[string]cliCommand {
+	return map[string]cliCommand{
+		"help": {
+			name:        "help",
+			description: "Display a help message",
+			callback:    commandHelp,
+		},
+		"map": {
+			name:        "map",
+			description: " Displays 20 location areas in the world",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays the previous 20 locations",
+			callback:    commandMapb,
+		},
+		"exit": {
+			name:        "exit",
+			description: "Exit the Pokedex",
+			callback:    commandExit,
+		},
+	}
+}
+
+type config struct {
+	Next     *string
+	Previous *string
 }
