@@ -10,9 +10,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+	"pokedexler/internal/pokecache"
 )
 
 func startRepl(cfg *config) {
+	// Create the cache
+	cfg.cache = pokecache.NewCache(2 * time.Minute)
 	// Set up the input scanner
 	scanner := bufio.NewScanner(os.Stdin)
 	// Create Pokedex REP(Loop)
@@ -81,6 +85,7 @@ func getCommands() map[string]cliCommand {
 }
 
 type config struct {
-	Next     *string
-	Previous *string
+	cache     *pokecache.Cache
+	Next      *string
+	Previous  *string
 }

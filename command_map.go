@@ -18,19 +18,20 @@ import (
 )
 
 const (
-	locAreaURL = "https://pokeapi.co/api/v2/location-area/"
+	locAreaURL = "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 )
 
 type Heartattack struct {
 	Count    int    `json:"count"`
 	Next     *string `json:"next"`
-	Previous *string    `json:"previous"`
+	Previous *string `json:"previous"`
 	Results  []struct {
 		Name string `json:"name"`
 		URL  string `json:"url"`
 	} `json:"results"`
 }
 
+// --------------------------------
 // Map Forward
 func commandMap(cfg *config) error {
 	url := ""
@@ -40,24 +41,11 @@ func commandMap(cfg *config) error {
 		url = *cfg.Next
 	}
 	// Get response from URL
-	res, err := http.Get(url)
+	heart, err := locationHelper(url, cfg)
 	if err != nil {
-		return fmt.Errorf("Failed to GET: %w", err)
+		return err
 	}
-	// Turn the bytes into json data
-	body, err := io.ReadAll(res.Body)
-	res.Body.Close()
-	if res.StatusCode > 299 {
-		return fmt.Errorf("Response failed with status code: %d", res.StatusCode)
-	}
-	if err != nil {
-		return fmt.Errorf("Error: %w", err)
-	}
-	var heart Heartattack
-	// Put the json data into a struct
-	if err := json.Unmarshal(body, &heart); err != nil {
-		return fmt.Errorf("Error unmarshalling body: %w", err)
-	}
+	// Print the map results
 	for _, result := range heart.Results {
 		fmt.Println(result.Name)
 	}
@@ -67,6 +55,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
+// --------------------------------
 // Map Backward
 func commandMapb(cfg *config) error {
 	url := ""
@@ -75,26 +64,52 @@ func commandMapb(cfg *config) error {
 	} else {
 		url = *cfg.Previous
 	}
-	res, err := http.Get(url)
+	heart, err := locationHelper(url, cfg)
 	if err != nil {
-		return fmt.Errorf("Failed to GET: %w", err)
+		return err
 	}
-	body, err := io.ReadAll(res.Body)
-	res.Body.Close()
-	if res.StatusCode > 299 {
-		return fmt.Errorf("Response failed with status code: %d", res.StatusCode)
-	}
-	if err != nil {
-		return fmt.Errorf("Error: %w", err)
-	}
-	var heart Heartattack
-	if err := json.Unmarshal(body, &heart); err != nil {
-		return fmt.Errorf("Error unmarshalling body: %w", err)
-	}
+	// Print the map results
 	for _, result := range heart.Results {
 		fmt.Println(result.Name)
 	}
 	cfg.Next = heart.Next
 	cfg.Previous = heart.Previous
 	return nil
+}
+
+// --------------------------------
+// location-area page fetcher... helper
+func locationHelper(url string, cfg *config) (Heartattack, error) {
+	// Cache check hit = unmarshal and return
+	fmt.Println("cache key:", url)
+	if val, ok := cfg.cache.Get(url); ok {
+		fmt.Println(">> Cached data found! <<")
+		var h Heartattack
+		if err := json.Unmarshal(val, &h); err != nil {
+		return Heartattack{}, fmt.Errorf("Error unmarshalling body: %w", err)
+		}
+		return h, nil
+	}
+	// No cache hit, send a request to the url
+	fmt.Println("<< No cached data. Sending request to PokeAPI... >>")
+	res, err := http.Get(url)
+	if err != nil {
+		return Heartattack{}, fmt.Errorf("Failed to GET: %w", err)
+	}
+	body, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if res.StatusCode > 299 {
+		return Heartattack{}, fmt.Errorf("Response failed with status code: %d", res.StatusCode)
+	}
+	if err != nil {
+		return Heartattack{}, fmt.Errorf("Error: %w", err)
+	}
+	// Store cache
+	cfg.cache.Add(url, body)
+	
+	var h Heartattack
+	if err := json.Unmarshal(body, &h); err != nil {
+		return Heartattack{}, fmt.Errorf("Error unmarshalling body: %w", err)
+	}
+	return h, nil
 }
