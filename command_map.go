@@ -33,7 +33,7 @@ type Heartattack struct {
 
 // --------------------------------
 // Map Forward
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, args []string) error {
 	url := ""
 	if cfg.Next == nil {
 		url = locAreaURL
@@ -57,7 +57,7 @@ func commandMap(cfg *config) error {
 
 // --------------------------------
 // Map Backward
-func commandMapb(cfg *config) error {
+func commandMapb(cfg *config, args []string) error {
 	url := ""
 	if cfg.Previous == nil {
 		return errors.New("you're on the first page")
@@ -81,28 +81,28 @@ func commandMapb(cfg *config) error {
 // location-area page fetcher... helper
 func locationHelper(url string, cfg *config) (Heartattack, error) {
 	// Cache check hit = unmarshal and return
-	fmt.Println("cache key:", url)
+	// fmt.Println("cache key:", url)
 	if val, ok := cfg.cache.Get(url); ok {
-		fmt.Println(">> Cached data found! <<")
+		// fmt.Println(">> Cached data found! <<")
 		var h Heartattack
 		if err := json.Unmarshal(val, &h); err != nil {
-		return Heartattack{}, fmt.Errorf("Error unmarshalling body: %w", err)
+			return Heartattack{}, fmt.Errorf("Error unmarshalling body: %w", err)
 		}
 		return h, nil
 	}
 	// No cache hit, send a request to the url
-	fmt.Println("<< No cached data. Sending request to PokeAPI... >>")
+	// fmt.Println("<< No cached data. Sending request to PokeAPI... >>")
 	res, err := http.Get(url)
 	if err != nil {
 		return Heartattack{}, fmt.Errorf("Failed to GET: %w", err)
 	}
-	body, err := io.ReadAll(res.Body)
 	defer res.Body.Close()
-	if res.StatusCode > 299 {
-		return Heartattack{}, fmt.Errorf("Response failed with status code: %d", res.StatusCode)
-	}
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return Heartattack{}, fmt.Errorf("Error: %w", err)
+	}
+	if res.StatusCode > 299 {
+		return Heartattack{}, fmt.Errorf("Response failed with status code: %d", res.StatusCode)
 	}
 	// Store cache
 	cfg.cache.Add(url, body)

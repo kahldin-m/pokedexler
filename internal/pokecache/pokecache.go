@@ -5,10 +5,27 @@ import (
 	"time"
 )
 
+// Cache
 type Cache struct {
 	mu        sync.Mutex
 	entries   map[string]cacheEntry
 	duration  time.Duration
+}
+
+// cacheEntry
+type cacheEntry struct {
+	createdAt    time.Time
+	val          []byte
+}
+
+// Constructor function for new Cache objects
+func NewCache(interval time.Duration) *Cache {
+	c := &Cache{
+		entries:   make(map[string]cacheEntry),
+		duration:  interval,
+	}
+	go c.reapLoop()
+	return c
 }
 
 // Add a new entry to the cache
@@ -18,7 +35,7 @@ func (c *Cache) Add(key string, value []byte) {
 	c.entries[key] = cacheEntry{createdAt: time.Now(), val: value}
 }
 
-// Get an entry from the cache
+// Return an entry at key from stored cache
 func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -47,19 +64,4 @@ func (c *Cache) reapLoop() {
 		}
 		c.mu.Unlock()
 	}
-}
-
-type cacheEntry struct {
-	createdAt    time.Time
-	val          []byte
-}
-
-// Constructor function for new Cache objects
-func NewCache(interval time.Duration) *Cache {
-	c := &Cache{
-		entries:   make(map[string]cacheEntry),
-		duration:  interval,
-	}
-	go c.reapLoop()
-	return c
 }
