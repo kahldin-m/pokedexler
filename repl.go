@@ -70,12 +70,12 @@ func getCommands() map[string]cliCommand {
 		},
 		"map": {
 			name:        "map",
-			description: " Display 20 location areas in the world",
+			description: " Display location areas in the world (20)",
 			callback:    commandMap,
 		},
 		"mapb": {
 			name:        "mapb",
-			description: "Display the previous 20 locations",
+			description: "Display the previous locations (20)",
 			callback:    commandMapb,
 		},
 		"explore": {
@@ -88,20 +88,25 @@ func getCommands() map[string]cliCommand {
 			description: "Attempt to catch a Pokemon",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect the stats of a caught pokemon",
+			callback:    commandInspect,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
 		"keys": {
-			name:        "DEBUG: keys",
-			description: "Returns cached urls",
+			name:        "keys",
+			description: "Display all currently cached urls",
 			callback:    commandKeys,
 		},
-		"dexler": {
-			name:        "DEBUG: dexler",
-			description: "Returns registered pokemon from Pokedex",
-			callback:    commandDexler,
+		"pokedex": {
+			name:        "pokedex",
+			description: "Display all caught pokemon in your Pokedex",
+			callback:    commandPokedex,
 		},
 	}
 }

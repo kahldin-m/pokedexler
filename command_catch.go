@@ -35,7 +35,7 @@ func commandCatch(cfg *config, args []string) error {
 	result := roll + effectiveThreshold
 	caught := result >= bxp
 	// UX
-	fmt.Printf("\nThrowing a Pokeball at %s...\n", name)
+	fmt.Printf("Throwing a Pokeball at %s...\n", name)
 	fmt.Printf(
 		"Chance to catch: %.0f%% (added threshold: %d)\n - Base EXP: %d\n - Roll: %d\n - Result: %d\n\n",
 		percent,
@@ -48,10 +48,10 @@ func commandCatch(cfg *config, args []string) error {
 		fmt.Printf("%s was caught!\n", name)
 		_, exists := cfg.Caught[name]
 		if exists {
-			fmt.Printf("%s is already registered in your Pokedex\n", name)
+			fmt.Printf("%s is already registered in your Pokedex.\nInspect it with the inspect command.\n", name)
 		} else {
 			cfg.Caught[name] = pokemon
-			fmt.Printf("%s has been added to your Pokedex!\n", name)
+			fmt.Printf("%s has been added to your Pokedex!\nYou may now inspect it with the inspect command.\n", name)
 		}
 		return nil
 	}
