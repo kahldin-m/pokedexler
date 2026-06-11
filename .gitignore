@@ -1,3 +1,7 @@
-repl.log
+# binaries
+pokedexler
+pokedexler.exe
 
+# logs
+repl.log
 **/pokeapi_helpers.go
