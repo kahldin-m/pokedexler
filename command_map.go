@@ -17,26 +17,12 @@ import (
 	"net/http"
 )
 
-const (
-	locAreaURL = "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
-)
-
-type Heartattack struct {
-	Count    int    `json:"count"`
-	Next     *string `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-}
-
 // --------------------------------
 // Map Forward
 func commandMap(cfg *config, args []string) error {
 	url := ""
 	if cfg.Next == nil {
-		url = locAreaURL
+		url = baseURL + "/location-area/?offset=0&limit=20"
 	} else {
 		url = *cfg.Next
 	}

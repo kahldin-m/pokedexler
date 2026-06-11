@@ -47,6 +47,17 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	}
 }
 
+// Return the keys from the cached entries
+func (c *Cache) Keys() []string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	keys := make([]string, 0, len(c.entries))
+	for k := range c.entries {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // Reap method is called when the cache is created by NewCache
 func (c *Cache) reapLoop() {
 	// make a ticker that fires every c.duration
@@ -55,6 +66,7 @@ func (c *Cache) reapLoop() {
 	for range ticker.C {
 		// for each entry, compute how old it is by subracting createdAt from Now
 		c.mu.Lock()
+		
 		for key, entry := range c.entries {
 			age := time.Now().Sub(entry.createdAt)
 			// if it's older than the allowed duration, remove it from the map by "key"
@@ -62,6 +74,7 @@ func (c *Cache) reapLoop() {
 				delete(c.entries, key)
 			}
 		}
+
 		c.mu.Unlock()
 	}
 }

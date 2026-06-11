@@ -23,6 +23,7 @@ func startRepl(cfg *config) {
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
+
 		// If user presses enter with nothing:
 		input := cleanInput(scanner.Text())
 		if len(input) == 0 {
@@ -82,16 +83,32 @@ func getCommands() map[string]cliCommand {
 			description: "Discover pokemon in an area",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Attempt to catch a Pokemon",
+			callback:    commandCatch,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
+		"keys": {
+			name:        "DEBUG: keys",
+			description: "Returns cached urls",
+			callback:    commandKeys,
+		},
+		"dexler": {
+			name:        "DEBUG: dexler",
+			description: "Returns registered pokemon from Pokedex",
+			callback:    commandDexler,
+		},
 	}
 }
 
 type config struct {
-	cache     *pokecache.Cache
-	Next      *string
-	Previous  *string
+	cache      *pokecache.Cache
+	Next       *string
+	Previous   *string
+	Caught     map[string]Pokeman
 }
